@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import numpy as np
 from time import time
 import pickle
@@ -19,9 +20,9 @@ print(f"Imported csky. Took {t1 - t0} seconds")
 dec = args.dec
 gamma = args.index
 
-delta_ts = np.logspace(3., 7., 9)
+delta_ts = np.logspace(3., 8., 11)
 ra = 0.
-mjd = 57000.
+mjd = 56293.0
 
 ana_dir = cy.utils.ensure_dir('/home/apizzuto/csky_cache/')
 ana = cy.get_analysis(cy.selections.repo, 
@@ -40,8 +41,8 @@ def get_sens(gamma, thresh, low_e=0., high_e=np.inf):
     tr = cy.get_trial_runner(conf, ana=ana, src=src, 
         flux = cy.hyp.PowerLawFlux(gamma, energy_range=(low_e, high_e)))
     sens = tr.find_n_sig(thresh, 0.9,
-                       batch_size=4000,
-                       max_batch_size=4000,
+                       batch_size=8000,
+                       max_batch_size=8000,
                        logging=False)
     if low_e < 1e3:
         e0 = 1.
@@ -67,7 +68,7 @@ for delta_t in delta_ts:
 
     tr = cy.get_trial_runner(conf, ana=ana, src=src)
     try:
-        bg_trials = tr.get_many_fits(1000)
+        bg_trials = tr.get_many_fits(2500)
         chi2 = cy.dists.Chi2TSD(bg_trials)
         median = chi2.median()
     except:
@@ -77,16 +78,24 @@ for delta_t in delta_ts:
     central_en_dict[delta_t]['no_cut'] = sens_no_cut
 
     central_en_dict[delta_t]['low_cut'] = []
-    for low_cut in np.logspace(1, 5., 33):
+    if dec < 0.:
+       low_cuts = np.logspace(3., 6., 25)
+    else:
+        low_cuts = np.logspace(1., 5., 33) 
+    for low_cut in low_cuts:
         central_en_dict[delta_t]['low_cut'].append(
             (low_cut, get_sens(gamma, median, low_e=low_cut))
             )
         
     central_en_dict[delta_t]['high_cut'] = []
-    for high_cut in np.logspace(3., 7., 25):
+    if dec < 0.:
+        high_cuts = np.logspace(5., 9., 25)
+    else:
+        high_cuts = np.logspace(3., 7., 25)
+    for high_cut in high_cuts:
         central_en_dict[delta_t]['high_cut'].append(
             (high_cut, get_sens(gamma, median, high_e=high_cut))
             )
 
-with open(f'./central_energy_results_dec_{dec:.1f}_gamma_{gamma:.1f}.pkl', 'wb') as fo:
+with open(f'/home/apizzuto/central_dnde/results/central_energy_results_dec_{dec:.1f}_gamma_{gamma:.1f}.pkl', 'wb') as fo:
     pickle.dump(central_en_dict, fo)
