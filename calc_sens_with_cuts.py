@@ -20,7 +20,7 @@ print(f"Imported csky. Took {t1 - t0} seconds")
 dec = args.dec
 gamma = args.index
 
-delta_ts = np.logspace(3., 8., 11)
+delta_ts = np.logspace(3., 6.5, 8)
 ra = 0.
 mjd = 56293.0
 
@@ -37,12 +37,13 @@ conf = {'ana': ana,
         'sig': 'transient',
        }
 
-def get_sens(gamma, thresh, low_e=0., high_e=np.inf):
+def get_sens(gamma, thresh, delta_t, low_e=0., high_e=np.inf):
     tr = cy.get_trial_runner(conf, ana=ana, src=src, 
         flux = cy.hyp.PowerLawFlux(gamma, energy_range=(low_e, high_e)))
+    ntrials = 6000 if delta_t < 3e5 else 2000
     sens = tr.find_n_sig(thresh, 0.9,
-                       batch_size=8000,
-                       max_batch_size=8000,
+                       batch_size=ntrials,
+                       max_batch_size=ntrials,
                        logging=False)
     if low_e < 1e3:
         e0 = 1.
@@ -74,7 +75,7 @@ for delta_t in delta_ts:
     except:
         median = np.median(bg_trials.ts)
 
-    sens_no_cut = get_sens(gamma, median)
+    sens_no_cut = get_sens(gamma, median, delta_t)
     central_en_dict[delta_t]['no_cut'] = sens_no_cut
 
     central_en_dict[delta_t]['low_cut'] = []
@@ -84,7 +85,7 @@ for delta_t in delta_ts:
         low_cuts = np.logspace(1., 5., 33) 
     for low_cut in low_cuts:
         central_en_dict[delta_t]['low_cut'].append(
-            (low_cut, get_sens(gamma, median, low_e=low_cut))
+            (low_cut, get_sens(gamma, median, delta_t, low_e=low_cut))
             )
         
     central_en_dict[delta_t]['high_cut'] = []
@@ -94,7 +95,7 @@ for delta_t in delta_ts:
         high_cuts = np.logspace(3., 7., 25)
     for high_cut in high_cuts:
         central_en_dict[delta_t]['high_cut'].append(
-            (high_cut, get_sens(gamma, median, high_e=high_cut))
+            (high_cut, get_sens(gamma, median, delta_t, high_e=high_cut))
             )
 
 with open(f'/home/apizzuto/central_dnde/results/central_energy_results_dec_{dec:.1f}_gamma_{gamma:.1f}.pkl', 'wb') as fo:
