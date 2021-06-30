@@ -93,9 +93,10 @@ def get_model_sensitivity(name):
     low_en = model_splines[name]['binned_flux'].bins_energy[0]
     return tr.to_dNdE(sens, E0=low_en, unit=1)
 
+model_sensitivities = dict()
 for name in model_splines.keys():
     model_sens = get_model_sensitivity(name)
-    model_splines[name]['sens'] = model_sens
+    model_sensitivities[name] = model_sens
 
 with open(f'results/dec_{dec:.1f}_model_sensitivities.pkl', 'wb') as f:
-    pickle.dump(model_splines, f)
+    pickle.dump(model_sensitivities, f)

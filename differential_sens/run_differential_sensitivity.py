@@ -94,6 +94,6 @@ for n_bins_per_decade in [1, 2, 5]:
         high=1e8, 
         bin_gamma=gamma)
     with open(
-        f'results/dec_{dec:.1f}_index_{index:.1f}_bins_{n_bins_per_decade}_diff_sens.pkl', 
+        f'results/dec_{dec:.1f}_index_{gamma:.1f}_bins_{n_bins_per_decade}_diff_sens.pkl', 
         'wb') as f:
         pickle.dump(res, f)
