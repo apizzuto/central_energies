@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 import numpy as np
 from time import time
-import pickle
-import argparse
+import pickle, pwd, argparse
 
-parser = argparse.ArgumentParser(description='Cetnral 90 energy construction')
-parser.add_argument('--dec', type=float, default=None,
-                    help='Declination in degrees')
-parser.add_argument('--index', type=float, default=None,
-                    help='Spectral index')
+parser = argparse.ArgumentParser(
+    description='Cetnral 90 energy construction'
+    )
+parser.add_argument(
+    '--dec', type=float, default=None,
+    help='Declination in degrees')
+parser.add_argument(
+    '--index', type=float, default=None,
+    help='Spectral index')
 args = parser.parse_args()
 
-t0 = time()
-print("Importing csky")
 import csky as cy
-t1 = time()
-print(f"Imported csky. Took {t1 - t0} seconds")
 
 dec = args.dec
 gamma = args.index
@@ -24,7 +23,9 @@ delta_ts = np.logspace(3., 6.5, 8)
 ra = 0.
 mjd = 56293.0
 
-ana_dir = cy.utils.ensure_dir('/home/apizzuto/csky_cache/')
+username = pwd.getpwuid(os.getuid())[0]
+ana_dir = cy.utils.ensure_dir(f'/home/{username}/{central_energies}/csky_cache/')
+# Pick your favorite data sample, I used GFU for no particular reason
 ana = cy.get_analysis(cy.selections.repo, 
     'version-002-p05', 
     cy.selections.GFUDataSpecs.GFU_IC86_2011_2018, 
@@ -55,7 +56,7 @@ central_en_dict = dict()
 
 for delta_t in delta_ts:
     central_en_dict[delta_t] = dict()
-    print(f"Begging time window: {delta_t:.1e}")
+    print(f"Beginning time window: {delta_t:.1e}")
     delta_t_days = delta_t / 86400.
 
     src = cy.utils.Sources(ra=ra,
@@ -98,5 +99,7 @@ for delta_t in delta_ts:
             (high_cut, get_sens(gamma, median, delta_t, high_e=high_cut))
             )
 
-with open(f'/home/apizzuto/central_dnde/results/central_energy_results_dec_{dec:.1f}_gamma_{gamma:.1f}.pkl', 'wb') as fo:
+output_dir = cy.utils.ensure_dir(f'/home/{username}/central_dnde/results/')
+output_f = output_dir + f'central_energy_results_dec_{dec:.1f}_gamma_{gamma:.1f}.pkl'
+with open(output_f, 'wb') as fo:
     pickle.dump(central_en_dict, fo)
