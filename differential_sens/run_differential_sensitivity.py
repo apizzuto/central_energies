@@ -1,8 +1,5 @@
 import numpy as np
 import pickle, os, pwd
-import seaborn as sns
-import histlite as hl
-from scipy.interpolate import PchipInterpolator
 import argparse
 import csky as cy
 
@@ -17,13 +14,20 @@ timer = cy.timing.Timer()
 time = timer.time
 
 username = pwd.getpwuid(os.getuid())[0]
-ana_dir = cy.utils.ensure_dir(f'/home/{username}/csky_cache')
+ana_dir = cy.utils.ensure_dir(f'/home/{username}/differential_sens/csky_cache')
 
 try:
-    ana = cy.get_analysis(cy.selections.repo, cy.selections.PSDataSpecs.IC86v4, dir=ana_dir)
+    ana = cy.get_analysis(
+        cy.selections.repo, 
+        cy.selections.PSDataSpecs.IC86v4, 
+        dir=ana_dir)
     ana.save(ana_dir)
 except:
-    ana = cy.get_analysis(cy.selections.repo, cy.selections.PSDataSpecs.IC86v4)
+    ana = cy.get_analysis(
+        cy.selections.repo, 
+        cy.selections.PSDataSpecs.IC86v4)
+    ana.save(ana_dir)
+
 
 cy.CONF['ana'] = ana
 cy.CONF['mp_cpus'] = 5
