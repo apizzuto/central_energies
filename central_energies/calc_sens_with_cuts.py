@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 from time import time
-import pickle, pwd, argparse
+import os, pickle, pwd, argparse
 
 parser = argparse.ArgumentParser(
     description='Cetnral 90 energy construction'
@@ -24,7 +24,7 @@ ra = 0.
 mjd = 56293.0
 
 username = pwd.getpwuid(os.getuid())[0]
-ana_dir = cy.utils.ensure_dir(f'/home/{username}/{central_energies}/csky_cache/')
+ana_dir = cy.utils.ensure_dir(f'/home/{username}/central_energies/csky_cache/')
 # Pick your favorite data sample, I used GFU for no particular reason
 ana = cy.get_analysis(cy.selections.repo, 
     'version-002-p05', 
